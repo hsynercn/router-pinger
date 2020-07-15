@@ -8,12 +8,307 @@
 <body>
 <script type="text/javascript">
     //Create a Pixi Application
-    let app = new PIXI.Application();
+    let app = new PIXI.Application({width: 1200,
+        height: 660});
+    //Aliases
+    let Application = PIXI.Application,
+        loader = PIXI.loader,
+        resources = PIXI.loader.resources,
+        Sprite = PIXI.Sprite;
+
 
     //Add the canvas that Pixi automatically created for you to the HTML document
     document.body.appendChild(app.view);
 
-    PIXI.utils.sayHello(type)
+    PIXI.loader
+        .add("sprites/ufuk.png")
+        .add("sprites/egemen.png")
+        .add("sprites/aytac.png")
+        .add("sprites/huseyin.png")
+        .load(setup);
+
+    let standartDimension = 60;
+    let hunterDimesion = standartDimension;
+    let playerDimesion = standartDimension;
+    let moveGridDimension = 30;
+
+    let currentLevelMap;
+
+    let standarSpeed = 3;
+    let infoPerson;
+    let hunterTypeE;
+    let hunterTypeA;
+    let player;
+    let playerSpeed = standarSpeed;
+    let hunterSpeed = standarSpeed;
+
+    let state;
+    let lastKey = "";
+    let lastKeyExecuted;
+
+    function setup() {
+        state = play;
+        infoPerson = new Sprite(loader.resources["sprites/ufuk.png"].texture);
+        hunterTypeE = new Sprite(loader.resources["sprites/egemen.png"].texture);
+        hunterTypeA = new Sprite(loader.resources["sprites/aytac.png"].texture);
+        player = new Sprite(loader.resources["sprites/huseyin.png"].texture);
+
+        hunterTypeE.width = hunterDimesion;
+        hunterTypeE.height = hunterDimesion;
+
+        hunterTypeA.width = hunterDimesion;
+        hunterTypeA.height = hunterDimesion;
+
+        player.width = playerDimesion;
+        player.height = playerDimesion;
+
+        infoPerson.x = 0;
+        infoPerson.y = 0;
+
+        hunterTypeA.x = 100;
+        hunterTypeA.y = 100;
+
+        hunterTypeE.x = 200;
+        hunterTypeE.y = 200;
+
+        player.x = 360;
+        player.y = 300;
+
+        hunterTypeA.vx = 0;
+        hunterTypeA.vy = 0;
+
+        hunterTypeE.vx = 0;
+        hunterTypeE.vy = 0;
+
+        player.vx = 0;
+        player.vy = 0;
+
+        generateMap(app);
+
+        app.stage.addChild(infoPerson);
+        app.stage.addChild(hunterTypeA);
+        app.stage.addChild(hunterTypeE);
+        app.stage.addChild(player);
+
+        //Start the game loop by adding the `gameLoop` function to
+        //Pixi's `ticker` and providing it with a `delta` argument.
+        app.ticker.add(delta => gameLoop(delta));
+
+        let left = keyboard("ArrowLeft"),
+            up = keyboard("ArrowUp"),
+            right = keyboard("ArrowRight"),
+            down = keyboard("ArrowDown");
+
+        //Left
+        left.press = () => {
+            lastKey = "L";
+        };
+
+        //Up
+        up.press = () => {
+            lastKey = "U";
+        };
+
+        //Right
+        right.press = () => {
+            lastKey = "R";
+        };
+
+        //Down
+        down.press = () => {
+            lastKey = "D";
+        };
+    }
+
+    function printPremises(gridX, gridY) {
+        for (i = -1; i <=1 ; i++){
+            rowStr = "";
+            for (j = -1; j <=1 ; j++) {
+                rowStr += "-"+currentLevelMap[gridY+i][gridX+j];
+            }
+            console.log(rowStr);
+        }
+        //console.log(+":"+currentLevelMap[gridX][gridY-1]+":"+currentLevelMap[gridX+1][gridY-1])
+        //console.log(currentLevelMap[gridX-1][gridY]+":"+currentLevelMap[gridX][gridY]+":"+currentLevelMap[gridX+1][gridY])
+        //console.log(currentLevelMap[gridX-1][gridY+1]+":"+currentLevelMap[gridX][gridY+1]+":"+currentLevelMap[gridX+1][gridY+1])
+    }
+
+    function processPlayerMove() {
+
+        //Use the cat's velocity to make it move
+        if ((player.x+30) % standartDimension == 30 && (player.y+30) % standartDimension == 30) {
+            let gridX = parseInt((player.x+parseInt(player.width/2))/standartDimension);
+            let gridY = parseInt((player.y+parseInt(player.height/2))/standartDimension);
+            console.log("gridX:" + gridX + " gridY:" + gridY);
+            printPremises(gridX, gridY);
+            let upGrid = currentLevelMap[gridY-1][gridX];
+            let downGrid = currentLevelMap[gridY+1][gridX];
+            let leftGrid = currentLevelMap[gridY][gridX-1];
+            let rightGrid = currentLevelMap[gridY][gridX+1];
+            if(lastKey != "") {
+                switch (lastKey) {
+                    case "L":
+                        if (leftGrid != 1) {
+                            player.vx = -playerSpeed;
+                            player.vy = 0;
+                            lastKey = "";
+                        }
+                        break;
+                    case "U":
+                        if (upGrid != 1) {
+                            player.vy = -playerSpeed;
+                            player.vx = 0;
+                            lastKey = "";
+                        }
+                        break;
+                    case "R":
+                        if (rightGrid != 1) {
+                            player.vx = playerSpeed;
+                            player.vy = 0;
+                            lastKey = "";
+                        }
+                        break;
+                    case "D":
+                        if (downGrid != 1) {
+                            player.vy = playerSpeed;
+                            player.vx = 0;
+                            lastKey = "";
+                        }
+                        break;
+                }
+            }
+
+        }
+    }
+
+    function applyPlayerMovement() {
+        let gridX = parseInt((player.x+parseInt(player.width/2))/standartDimension);
+        let gridY = parseInt((player.y+parseInt(player.height/2))/standartDimension);
+        let upGrid = currentLevelMap[gridY-1][gridX];
+        let downGrid = currentLevelMap[gridY+1][gridX];
+        let leftGrid = currentLevelMap[gridY][gridX-1];
+        let rightGrid = currentLevelMap[gridY][gridX+1];
+        if(player.vx != 0) {
+            if((player.y+30) % standartDimension == 30) {
+                if((player.x+30) % standartDimension == 30) {
+                    if(player.vx > 0 && rightGrid == 1) {
+                        //RIGHT HIT
+                        player.vx = 0;
+                    } else if(player.vx < 0 && leftGrid == 1) {
+                        //LEFT HIT
+                        player.vx = 0;
+                    }
+                }
+                player.x += player.vx;
+            }
+        }
+        if(player.vy != 0) {
+            if((player.x+30) % standartDimension == 30) {
+                if((player.y+30) % standartDimension == 30) {
+                    if(player.vy > 0 && downGrid == 1) {
+                        //DOWN HIT
+                        player.vy = 0;
+                    } else if(player.vy < 0 && upGrid == 1) {
+                        //UP HIT
+                        player.vy = 0;
+                    }
+                }
+                player.y += player.vy
+            }
+        }
+    }
+
+    function play(delta) {
+        processPlayerMove();
+        applyPlayerMovement();
+    }
+
+    function gameLoop(delta){
+
+        //Update the current game state:
+        state(delta);
+    }
+
+    function drawWall(dimension, locX, locY, app) {
+        let rectangle = new PIXI.Graphics();
+        rectangle.beginFill(0x000CFF);
+        rectangle.drawRect(locY * dimension, locX * dimension, dimension, dimension);
+        rectangle.endFill();
+        app.stage.addChild(rectangle);
+    }
+    function generateMap(app) {
+        var mapItems = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ];
+
+        currentLevelMap = mapItems;
+
+        for(var i = 0; i < currentLevelMap.length; i++) {
+            var row = currentLevelMap[i];
+            for(var j = 0; j < row.length; j++) {
+                if(row[j] == 1) {
+                    drawWall(standartDimension, i, j, app)
+                }
+            }
+        }
+    }
+
+    function keyboard(value) {
+        let key = {};
+        key.value = value;
+        key.isDown = false;
+        key.isUp = true;
+        key.press = undefined;
+        key.release = undefined;
+        //The `downHandler`
+        key.downHandler = event => {
+            if (event.key === key.value) {
+                if (key.isUp && key.press) key.press();
+                key.isDown = true;
+                key.isUp = false;
+                event.preventDefault();
+            }
+        };
+
+        //The `upHandler`
+        key.upHandler = event => {
+            if (event.key === key.value) {
+                if (key.isDown && key.release) key.release();
+                key.isDown = false;
+                key.isUp = true;
+                event.preventDefault();
+            }
+        };
+
+        //Attach event listeners
+        const downListener = key.downHandler.bind(key);
+        const upListener = key.upHandler.bind(key);
+
+        window.addEventListener(
+            "keydown", downListener, false
+        );
+        window.addEventListener(
+            "keyup", upListener, false
+        );
+
+        // Detach event listeners
+        key.unsubscribe = () => {
+            window.removeEventListener("keydown", downListener);
+            window.removeEventListener("keyup", upListener);
+        };
+
+        return key;
+    }
 </script>
 </body>
 </html>
