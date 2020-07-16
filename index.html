@@ -134,6 +134,16 @@
         loreText.x = 1210;
         loreText.y = 150;
 
+
+        let nameTextStyle = new PIXI.TextStyle({
+            fontFamily: "Futura",
+            fontSize: 55,
+            fill: "Red"
+        });
+        let gameNameText = new PIXI.Text("ROUTER\n   DOWNER", nameTextStyle);
+        gameNameText.x = 1210;
+        gameNameText.y = 480;
+
         player = generatePlayer(6,5);
         generateMap(gameScene);
 
@@ -163,6 +173,8 @@
         gameScene.addChild(loreText);
 
         gameScene.addChild(scoreText);
+
+        gameScene.addChild(gameNameText);
 
         app.stage.addChild(gameScene);
 
