@@ -218,6 +218,18 @@
         }
     }
 
+    function addScoreToScene() {
+        let style = new PIXI.TextStyle({
+            fontFamily: "Futura",
+            fontSize: 64,
+            fill: "gold"
+        });
+        let message = new PIXI.Text("SCORE:"+totalScore, style);
+        message.x = 180;
+        message.y = 280;
+        gameOverScene.addChild(message);
+    }
+
     function generateHunterMove(hunter) {
         if ((hunter.x+parseInt(hunter.width/2)) % standartDimension == moveDimension &&
             (hunter.y+parseInt(hunter.height/2)) % standartDimension == moveDimension) {
@@ -342,6 +354,7 @@
 
     function end() {
         gameScene.visible = false;
+        addScoreToScene();
         gameOverScene.visible = true;
     }
 
