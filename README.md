@@ -24,6 +24,7 @@ Active link: https://hsynercn.github.io/
                 |     |   |     |   |     |   |     |   |     x   |     |
                 '-._,-'   '-._,-'   '-._,-'   '-._,-'   '-._,-"   '-._,-'
 								
-       The game is in memory of the soldiers who configured routers for Ses Hizmetleri.
+         The game is in memory of the soldiers who configured (and misconfigured) 
+	                       routers for Ses Hizmetleri.
 
 
