@@ -25,6 +25,9 @@
         .add("sprites/egemen.png")
         .add("sprites/aytac.png")
         .add("sprites/huseyin.png")
+        .add("sprites/deha.png")
+        .add("sprites/busra.png")
+        .add("sprites/seyda.png")
         .add("sprites/router.png")
         .load(setup);
 
@@ -46,6 +49,7 @@
 
     let hunters = [];
     let routers = [];
+    let hunterSeed = 0;
 
     let collectedRouterNum = 0;
 
@@ -61,7 +65,7 @@
     }
 
     function generateHunter(hunterType, locX, locY) {
-        let hunterSprites = {"E":"sprites/egemen.png", "A":"sprites/aytac.png"};
+        let hunterSprites = {"E":"sprites/egemen.png", "A":"sprites/aytac.png", "S":"sprites/seyda.png"};
         hunter = new Sprite(loader.resources[hunterSprites[hunterType]].texture);
         initSprite(hunter, hunterDimesion, locX, locY);
         return hunter;
@@ -74,7 +78,10 @@
     }
 
     function generatePlayer(locX, locY) {
-        player = new Sprite(loader.resources["sprites/huseyin.png"].texture);
+        let players = ["sprites/huseyin.png", "sprites/deha.png", "sprites/busra.png"];
+
+        let randomSprite = players[Math.floor(Math.random() * players.length)];
+        player = new Sprite(loader.resources[randomSprite].texture);
         initSprite(player, playerDimesion, locX, locY);
         return player;
     }
@@ -147,12 +154,14 @@
         player = generatePlayer(6,5);
         generateMap(gameScene);
 
-        //hunters.push(generateHunter("E", 9, 3));
-        //hunters.push(generateHunter("E", 9, 3));
-        hunters.push(generateHunter("E", 9, 3));
-        hunters.push(generateHunter("A", 10, 3));
-        //hunters.push(generateHunter("A", 10, 3));
-        //hunters.push(generateHunter("A", 10, 3));
+        let hunterSprite = ["A", "E", "S"];
+        hunterSeed = (hunterSeed + 1) % hunterSprite.length;
+        let randomHunterOne = hunterSprite[hunterSeed];
+        hunterSeed = (hunterSeed + 1) % hunterSprite.length;
+        let randomHunterTwo = hunterSprite[hunterSeed];
+        hunters.push(generateHunter(randomHunterOne, 9, 3));
+        hunters.push(generateHunter(randomHunterTwo, 10, 3));
+
 
         routers.push(generateRouter(1, 1));
         routers.push(generateRouter(1, 9));
@@ -381,8 +390,13 @@
             routers.forEach(function (item, index) {
                 item.visible = true;
             });
-            let a = generateHunter("A", 10, 3);
-            let b = generateHunter("E", 10, 3);
+            let hunterSprite = ["A", "E", "S"];
+            hunterSeed = Math.floor(Math.random() * hunterSprite.length);
+            let randomHunterOne = hunterSprite[hunterSeed];
+            hunterSeed = (hunterSeed + 1) % hunterSprite.length;
+            let randomHunterTwo = hunterSprite[hunterSeed];
+            let a = generateHunter(randomHunterOne, 10, 3);
+            let b = generateHunter(randomHunterTwo, 10, 3);
             gameScene.addChild(a);
             gameScene.addChild(b);
             hunters.push(a);
